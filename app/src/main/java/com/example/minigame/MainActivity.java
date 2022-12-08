@@ -11,11 +11,10 @@ public class MainActivity extends AppCompatActivity {
 
     // Used to load the 'minigame' library on application startup.
     static {
-        System.loadLibrary("minigame");
+        System.loadLibrary("JNIDriver");
     }
 
     private ActivityMainBinding binding;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,9 +31,4 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    /**
-     * A native method that is implemented by the 'minigame' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
 }

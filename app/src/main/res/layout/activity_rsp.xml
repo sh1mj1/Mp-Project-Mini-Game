@@ -13,7 +13,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/game_frame_Fl"
         android:layout_margin="20dp"
         android:layout_marginTop="25dp"
         >
@@ -21,7 +20,6 @@
             android:id="@+id/rsp_icon_Iv"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:src="@color/material_dynamic_neutral30"
             android:layout_gravity="center"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/rsp_title_Tv"
@@ -55,5 +53,47 @@
 
             />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/computer_rsp"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        app:layout_constraintTop_toBottomOf="@+id/rsp_top_bar_Cl"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="50dp"
+
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="50sp"
+        app:layout_constraintStart_toEndOf="@+id/computer_rsp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/computer_rsp"
+        android:text="0"
+        app:layout_constraintBottom_toBottomOf="@id/computer_rsp"
+        />
+
+    <FrameLayout
+        android:id="@+id/rsp_camera_preview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/rsp_test_btn"
+        app:layout_constraintTop_toBottomOf="@+id/computer_rsp"
+        android:layout_marginTop="10dp"
+
+        />
+
+    <Button
+        android:id="@+id/rsp_test_btn"
+        android:text="test Button "
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rsp_camera_preview"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

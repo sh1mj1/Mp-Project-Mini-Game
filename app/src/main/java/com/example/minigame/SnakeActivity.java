@@ -6,15 +6,21 @@ import androidx.appcompat.widget.AppCompatImageButton;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.minigame.databinding.ActivitySnakeBinding;
 
@@ -24,7 +30,12 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Callback {
+public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Callback, InterruptListener {
+
+    String SNAKE = "SnakeActivity";
+
+    InterruptDriver mDriver;
+    boolean mTreadRun = true;
 
     // list of snake points / snake length
     private final List<SnakePoints> snakePointsList = new ArrayList<>();
@@ -68,6 +79,22 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_snake);
 
+        GameInfo.setGameStage(2);
+        Log.d(SNAKE, "=== Game Start === GameInfo - GameStage: " + GameInfo.getGameStage() +
+                "   GameInfo - GameScore: " + GameInfo.getTotalScore());
+
+        // open Interrupt Driver
+        mDriver = new InterruptDriver();
+        mDriver.setmActivity(this);
+
+        if (mDriver.open("/dev/sm9s5422_interrupt") < 0) {
+            Toast.makeText(SnakeActivity.this, "Driver Open Failed", Toast.LENGTH_SHORT).show();
+            Log.d(SNAKE, "open Driver Failed");
+        } else {
+            Log.d(SNAKE, "open Driver Success");
+        }
+
+
         surfaceView = findViewById(R.id.surfaceView);
         scoreTV = findViewById(R.id.score_Tv);
 
@@ -80,6 +107,10 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
         surfaceView.getHolder().addCallback(this);
 
         // TODO: 2022/11/28 Have to change to GPIO Button
+        setArrowKeysListener(upBtn, downBtn, leftBtn, rightBtn);
+    }
+
+    private void setArrowKeysListener(AppCompatImageButton upBtn, AppCompatImageButton downBtn, AppCompatImageButton leftBtn, AppCompatImageButton rightBtn) {
         upBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -89,7 +120,6 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
                 }
             }
         });
-
         downBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -100,7 +130,6 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
 
             }
         });
-
         leftBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -133,7 +162,6 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
     public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
 
     }
-
     @Override
     public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
 
@@ -244,26 +272,15 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
                     timer.purge();
                     timer.cancel();
 
-                    AlertDialog.Builder builder = new AlertDialog.Builder(SnakeActivity.this);
-                    builder.setMessage("Your Score = " + score);
-                    builder.setTitle("Next Stage");
-                    builder.setCancelable(false);
-                    builder.setPositiveButton("Start Again", new DialogInterface.OnClickListener() {
+                    // Game Over
 
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            // restart game / re-init data
-                            init();
-                        }
-                    });
+                    GameInfo.setTotalScore(score + GameInfo.getTotalScore());
+                    Log.d(SNAKE, " === Game Over === GameInfo - GameStage: " + GameInfo.getGameStage() +
+                            "  GameInfo - GameScore: " + GameInfo.getTotalScore());
 
-                    // timer runs in background so we need to show dialog on main thread
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            builder.show();
-                        }
-                    });
+                    Intent intent = new Intent(getApplicationContext(), GameOverActivity.class);
+                    startActivity(intent);
+
 
                 } else {
                     // lock canvas on surfaceHolder to draw on it
@@ -356,4 +373,67 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
 
     }
 
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // close Driver
+//        mDriver.close();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // open Driver again
+//        if (mDriver.open("/dev/sm9s5422_interrupt") < 0) {
+//            Toast.makeText(SnakeActivity.this, "Driver Open Failed", Toast.LENGTH_SHORT).show();
+//        } else {
+//            Toast.makeText(SnakeActivity.this, "Driver Open Success", Toast.LENGTH_SHORT).show();
+//        }
+    }
+
+
+    public void onReceive(int val) {
+        Message text = Message.obtain();
+        text.arg1 = val;
+        handler.sendMessage(text);
+        Log.d("Handler", "text :" + String.valueOf(text));
+    }
+
+    public Handler handler = new Handler(Looper.getMainLooper()) {
+        public void handleMessage(Message msg) {
+            switch (msg.arg1) {
+                case 1:
+//                    tv.setText("UP");
+                    movingPosition = "up";
+                    Log.d(SNAKE, "movingPosition" + movingPosition);
+                    break;
+                case 2:
+//                    tv.setText("DOWN");
+                    movingPosition = "down";
+                    Log.d(SNAKE, "movingPosition" + movingPosition);
+                    break;
+                case 3:
+//                    tv.setText("LEFT");
+                    movingPosition = "left";
+                    Log.d(SNAKE, "movingPosition" + movingPosition);
+                    break;
+                case 4:
+//                    tv.setText("RIGHT");
+                    movingPosition = "right";
+                    Log.d(SNAKE, "movingPosition" + movingPosition);
+                    break;
+                case 5:
+//                    tv.setText("CENTER");
+                    Log.d(SNAKE, "The function of Center Button is not implemented yet");
+                    Log.d(SNAKE, "movingPosition" + movingPosition);
+                    break;
+            }
+        }
+    };
+
 }
+
+/*
+
+ */
