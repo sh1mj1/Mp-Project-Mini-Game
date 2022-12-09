@@ -1,6 +1,7 @@
 package com.example.minigame;
 
 import android.content.Intent;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.SurfaceView;
@@ -82,6 +83,7 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
 
     private CountDownTimer countDownTimer;
     private boolean canStart = false;
+    private boolean canMatch = false;
     private int count = 3;
     private static final int TOTAL = 4 * 1000;
     private static final int COUNT_DOWN_INTERVAL = 900;
@@ -148,6 +150,7 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
             public void onClick(View view) {
                 if (canStart) {
                     myRsp = 0;
+                    canMatch = true;
                     randomValue = 0;
                     Log.d("COUNT", "CountDown Start");
                     TextView rspCountDown = findViewById(R.id.rsp_count_down_Tv);
@@ -464,31 +467,32 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
                 TextView cntDownTv = findViewById(R.id.rsp_count_down_Tv);
                 cntDownTv.setVisibility(View.VISIBLE);
                 cntDownTv.setText(String.valueOf(count));
-
-                if (count < 1) {
-                    cntDownTv.setVisibility(View.INVISIBLE);
+                if (
+                        (count == 0)
+                ) {
+                    findViewById(R.id.rsp_count_down_Tv).setVisibility(View.INVISIBLE);
+                    doRockScissorsPaper();
+                    canMatch = false;
                 }
 
                 count--;
-                if (count < 0) {
-                    count = 3;
-                    canStart = false;
-                }
+
             }
 
             @Override
             public void onFinish() {
                 findViewById(R.id.rsp_count_down_Tv).setVisibility(View.INVISIBLE);
-
-                doRockScissorsPaper();
+                canStart = true;
+                canMatch = true;
+//                doRockScissorsPaper();
             }
         };
     }
 
     private void doRockScissorsPaper() {
+        countDownTimer.cancel();
         setComputerRspIv(); // 컴퓨터가 가위, 바위, 보 제시
         setMyRsp(); // 내 가위, 바위, 보 를 저장
-
         matchRsp(); // 승부 판가름
     }
 
@@ -550,7 +554,7 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
             canStart = true;
             rspScore += 1;
             Log.d(TAG, "Match Result - Win!  rspScore : " + rspScore);
-            count = 3;
+            count = 4;
 //            matchHandler.postDelayed(new Runnable() {
 //                @Override
 //                public void run() {
@@ -567,14 +571,7 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
             canStart = true;
             // TODO: 2022/12/09 비김 다시 시작
             Log.d(TAG, "Match Result - Draw! rspScore : " + rspScore);
-            count = 3;
-//            matchHandler.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    countDownTimer.start();
-//                }
-//            }, 2000);
-//            countDownTimer.start();
+            count = 4;
 
         } else {
             resultOfMatch = 0;
@@ -586,6 +583,9 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
 
     private void gameOver() {
         GameInfo.setTotalScore(rspScore + GameInfo.getTotalScore());
+        GameInfo.setGameStage(3);
+        Log.d(TAG, "=== Game Over === GameInfo - GameStage: " + GameInfo.getGameStage() +
+                "   GameInfo - GameScore: " + GameInfo.getTotalScore());
         Intent intent = new Intent(getApplicationContext(), GameOverActivity.class);
         startActivity(intent);
     }

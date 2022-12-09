@@ -71,6 +71,7 @@ public class GameOverActivity extends AppCompatActivity {
                     Intent intent2 = new Intent(getApplicationContext(), RspActivity.class);
                     startActivity(intent2);
                 } else {
+                    // 마지막 스테이지 였을 때
                     Log.d(GAMEOVER, "Completely Game over");
                 }
             }
