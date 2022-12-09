@@ -28,13 +28,8 @@ public class GameOverActivity extends AppCompatActivity {
         recordRankTv = findViewById(R.id.record_rank_Tv);
         goHomeTv = findViewById(R.id.go_home_Tv);
 
-//        game_over_total_score_Tv
-
-
         Log.d(GAMEOVER, " === Game Over === GameInfo - GameStage: " + GameInfo.getGameStage() +
                 "  GameInfo - GameScore: " + GameInfo.getTotalScore());
-
-
 
         totalScoreTv.setText(String.valueOf(GameInfo.getTotalScore()));
 
