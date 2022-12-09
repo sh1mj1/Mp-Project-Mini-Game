@@ -101,7 +101,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/record_name_Tv" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/capturedImage_Ib"
         android:layout_width="0dp"
         android:layout_height="0dp"

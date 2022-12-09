@@ -93,7 +93,7 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
         Log.d(TAG, "nickname - " + myNickname);
         GameInfo.setGameRank(5);
         GameInfo.setNickname(myNickname);
-
+//        GameInfo.setImgBitmap(bitmap);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

@@ -1,6 +1,7 @@
 package com.example.minigame;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,14 +25,24 @@ public class RankRvAdapter extends RecyclerView.Adapter<RankRvAdapter.MyViewHold
       */
     String TAG = "RecyclerViewAdapter";
 
+    public interface onListItemSelectedInterface{
+        void onItemSelected(View v, int position);
+    }
+
+    private onListItemSelectedInterface mListener;
+    Context mContext;
+
+
+
     //리사이클러뷰에 넣을 데이터 리스트
     ArrayList<Rank> rankArrayList;
     Context context;
 
     //생성자를 통하여 데이터 리스트 context를 받음
-    public RankRvAdapter(Context context, ArrayList<Rank> rankArrayList) {
+    public RankRvAdapter(Context context, ArrayList<Rank> rankArrayList, onListItemSelectedInterface listener) {
         this.rankArrayList = rankArrayList;
         this.context = context;
+        this.mListener = listener;
     }
 
     @Override
@@ -63,12 +74,6 @@ public class RankRvAdapter extends RecyclerView.Adapter<RankRvAdapter.MyViewHold
         holder.rankItemScore.setText(rankArrayList.get(position).getGameScore().toString());
         holder.rankItemNickname.setText(rankArrayList.get(position).getNickname());
 
-//        holder.rankItemTv.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Toast.makeText(context, position + "번째 텍스트 뷰 클릭", Toast.LENGTH_SHORT).show();
-//            }
-//        });
 
 
     }
@@ -84,8 +89,18 @@ public class RankRvAdapter extends RecyclerView.Adapter<RankRvAdapter.MyViewHold
             rankItemTv = itemView.findViewById(R.id.rank_item_tv);
             rankItemScore = itemView.findViewById(R.id.rank_item_score);
             rankItemNickname = itemView.findViewById(R.id.rank_item_nickname);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mListener.onItemSelected(view, getAdapterPosition());
+//                    Toast.makeText(context, "position : " + getAdapterPosition(), Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
+
+
+
 
 
 }

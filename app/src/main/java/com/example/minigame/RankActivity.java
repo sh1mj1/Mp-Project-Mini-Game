@@ -7,11 +7,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RankActivity extends AppCompatActivity {
+public class RankActivity extends AppCompatActivity implements RankRvAdapter.onListItemSelectedInterface {
 
     public static ArrayList<Rank> rankList = new ArrayList<>();
     RecyclerView recyclerView;
@@ -31,12 +33,26 @@ public class RankActivity extends AppCompatActivity {
         rankList.add(new Rank(GameInfo.getGameRank(), GameInfo.getTotalScore(), GameInfo.getNickname(), GameInfo.getImgBitmap()));
 
 
-
         recyclerView = findViewById(R.id.rank_Rv);
-        adapter = new RankRvAdapter(this, rankList);
+        adapter = new RankRvAdapter(this, rankList, this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
 
+
+    }
+
+    @Override
+    public void onItemSelected(View v, int position) {
+        Toast.makeText(getApplicationContext(), "position : " + position, Toast.LENGTH_SHORT).show();
+
+
+        GameInfo.setGameRank(rankList.get(position).getGameRank());
+        GameInfo.setTotalScore(rankList.get(position).getGameScore());
+        GameInfo.setNickname(rankList.get(position).getNickname());
+        GameInfo.setImgBitmap(rankList.get(position).getGameImg());
+
+        Intent intent = new Intent(getApplicationContext(), SomeoneRankActivity.class);
+        startActivity(intent);
 
     }
 }
