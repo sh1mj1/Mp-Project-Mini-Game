@@ -77,7 +77,7 @@
         />
 
 <!--    <com.example.minigame.CustomSufaceView-->
-    <FrameLayout
+    <com.example.minigame.CustomSufaceView
         android:id="@+id/main_surface_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
