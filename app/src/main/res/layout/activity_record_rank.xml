@@ -60,7 +60,7 @@
         android:id="@+id/record_score_guide_Tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="50dp"
         android:text="Score"
         android:textSize="40sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -83,7 +83,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="50dp"
         android:text="NAME: "
         android:textColor="@color/gray"
         android:textSize="30sp"
@@ -102,27 +102,67 @@
         app:layout_constraintStart_toEndOf="@+id/record_name_Tv" />
 
     <ImageView
-        android:id="@+id/captured_image"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:id="@+id/capturedImage_Ib"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_gravity="center"
-        android:layout_marginTop="40dp"
-        android:contentDescription="TODO"
+        android:layout_margin="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/edit_Ll"
         app:layout_constraintTop_toBottomOf="@+id/record_name_Et"
 
         />
+    <LinearLayout
+        android:id="@+id/edit_Ll"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/capturedImage_Ib"
+        app:layout_constraintBottom_toTopOf="@+id/complete_Btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginHorizontal="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="horizontal"
+        >
+        <Button
+            android:id="@+id/color_Btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Color"
+            android:textSize="10sp"
+            android:layout_marginEnd="10dp"
+            />
+        <Button
+            android:id="@+id/edge_Btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edge"
+            android:textSize="10sp"
+            android:layout_marginEnd="10dp"
+            />
+        <Button
+            android:id="@+id/blur_Btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Blur"
+            android:textSize="10sp"
+            android:layout_marginEnd="10dp"
+            />
+
+    </LinearLayout>
 
     <Button
-        android:id="@+id/capture_Btn"
+        android:id="@+id/complete_Btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:text="capture"
+        android:layout_marginTop="10dp"
+        android:text="Complete"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/captured_image" />
+        app:layout_constraintTop_toBottomOf="@+id/edit_Ll"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="10dp"
+        />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

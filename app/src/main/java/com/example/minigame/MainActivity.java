@@ -25,6 +25,12 @@ public class MainActivity extends AppCompatActivity {
 
         binding.mainStartBtn.setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), MemoryActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        });
+        binding.mainRankBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(getApplicationContext(), RankActivity.class);
             startActivity(intent);
         });
 

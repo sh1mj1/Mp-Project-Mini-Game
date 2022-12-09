@@ -279,6 +279,8 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
                             "  GameInfo - GameScore: " + GameInfo.getTotalScore());
 
                     Intent intent = new Intent(getApplicationContext(), GameOverActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
 
 

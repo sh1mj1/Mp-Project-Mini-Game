@@ -232,8 +232,8 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
             mOpenCvCameraView.releaseCamera();
             mOpenCvCameraView.disableView();
         }
-        countDownTimer.cancel();
-        countDownTimer = null;
+//        countDownTimer.cancel();
+//        countDownTimer = null;
     }
 
     @Override
@@ -587,6 +587,8 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
         Log.d(TAG, "=== Game Over === GameInfo - GameStage: " + GameInfo.getGameStage() +
                 "   GameInfo - GameScore: " + GameInfo.getTotalScore());
         Intent intent = new Intent(getApplicationContext(), GameOverActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 }

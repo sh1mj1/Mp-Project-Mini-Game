@@ -11,6 +11,8 @@ import android.widget.TextView;
 public class GameOverActivity extends AppCompatActivity {
     private String GAMEOVER = "GAMEOVER";
 
+    Intent intent;
+
     private TextView nextStageBtn;
     private TextView gameOverTv;
     private TextView totalScoreTv;
@@ -43,16 +45,14 @@ public class GameOverActivity extends AppCompatActivity {
         recordRankTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplication(), RecordRankActivity.class);
-                startActivity(intent);
+                gameOver(new Intent(getApplication(), RecordRankActivity.class));
             }
         });
 
         goHomeTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(intent);
+                gameOver(new Intent(getApplicationContext(), MainActivity.class));
             }
         });
 
@@ -64,12 +64,10 @@ public class GameOverActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (GameInfo.getGameStage() == 1) {
-                    Intent intent = new Intent(getApplicationContext(), SnakeActivity.class);
-                    startActivity(intent);
+                    gameOver(new Intent(getApplicationContext(), SnakeActivity.class));
 
                 } else if (GameInfo.getGameStage() == 2) {
-                    Intent intent2 = new Intent(getApplicationContext(), RspActivity.class);
-                    startActivity(intent2);
+                    gameOver(new Intent(getApplicationContext(), RspActivity.class));
                 } else {
                     // 마지막 스테이지 였을 때
                     Log.d(GAMEOVER, "Completely Game over");
@@ -78,7 +76,11 @@ public class GameOverActivity extends AppCompatActivity {
         });
     }
 
-
+    private void gameOver(Intent intent) {
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
 
 
 }

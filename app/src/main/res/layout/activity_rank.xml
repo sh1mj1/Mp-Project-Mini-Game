@@ -4,39 +4,39 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".GameOverActivity">
+    tools:context=".RankActivity">
 
-    <!--    -->
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/game_over_top_bar_Cl"
+        android:id="@+id/rank_top_bar_Cl"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:layout_marginTop="25dp"
+        app:layout_constraintBottom_toTopOf="@+id/rank_Rv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/game_over_icon_Iv"
+            android:id="@+id/rank_icon_Iv"
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_gravity="center"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/game_over_title_Tv"
+            app:layout_constraintEnd_toStartOf="@+id/rank_title_Tv"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/game_over_title_Tv"
+            android:id="@+id/rank_title_Tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginStart="20dp"
-            android:text="Game Over"
+            android:text="Rank - 8자리 닉네임을 입력하세요"
             android:textSize="23sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/game_over_icon_Iv"
+            app:layout_constraintStart_toEndOf="@+id/rank_icon_Iv"
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.appcompat.widget.AppCompatButton
@@ -50,78 +50,64 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-
             />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!--    -->
-
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:id="@+id/game_over_LL"
+    <LinearLayout
+        android:id="@+id/rank_Ll"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/rank_top_bar_Cl"
+        app:layout_constraintEnd_toEndOf="@+id/rank_top_bar_Cl"
+        app:layout_constraintTop_toBottomOf="@+id/rank_top_bar_Cl"
+        app:layout_constraintBottom_toTopOf="@+id/rank_Rv"
+        android:orientation="horizontal"
+        android:layout_marginHorizontal="10dp"
+
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rank"
+            android:layout_marginStart="20dp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Score"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_marginStart="30dp"
+            android:textSize="30sp"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nickname"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_marginStart="30dp"
+            android:textSize="30sp"
+            />
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rank_Rv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:orientation="vertical"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/game_over_top_bar_Cl">
+        app:layout_constraintTop_toBottomOf="@+id/rank_Ll"
+        tools:listitem="@layout/rank_item"
+        >
 
-        <TextView
-            android:id="@+id/game_over_Tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="GAME OVER"
-            android:textSize="60sp"
-            android:layout_marginBottom="40dp"
-            tools:visibility="visible"
-            android:visibility="gone"
-            />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="현재 점수"
-            android:textSize="30sp"
-            android:layout_marginBottom="20dp"
-            />
-        <TextView
-            android:id="@+id/game_over_total_score_Tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="333"
-            android:textSize="50sp"
-            android:textColor="@color/black"
-            android:layout_marginBottom="120dp"
-            />
-
-        <TextView
-            android:id="@+id/next_stage_Tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:background="@color/white"
-            android:text="다음 스테이지로"
-            android:textSize="30sp" />
-
-        <TextView
-            android:id="@+id/record_rank_Tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:text="순위 기록하기"
-            android:textSize="30sp" />
-
-
-
-        <TextView
-            android:id="@+id/go_home_Tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="처음으로"
-            android:textSize="30sp" />
-
-    </androidx.appcompat.widget.LinearLayoutCompat>
-
+    </androidx.recyclerview.widget.RecyclerView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
