@@ -164,7 +164,6 @@ public class MemoryActivity extends AppCompatActivity {
 
     private void countDownTimer() {
         countDownTimer = new CountDownTimer(TOTAL, COUNT_DOWN_INTERVAL) {
-
             @Override
             public void onTick(long l) {
                 if(gameScore >=2) {

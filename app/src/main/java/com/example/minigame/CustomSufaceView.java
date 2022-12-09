@@ -58,4 +58,9 @@ public class CustomSufaceView extends JavaCameraView {
     public Size getResolution() {
         return mCamera.getParameters().getPreviewSize();
     }
+
+    @Override
+    protected void releaseCamera() {
+        super.releaseCamera();
+    }
 }

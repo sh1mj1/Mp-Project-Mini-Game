@@ -1,18 +1,20 @@
 package com.example.minigame;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.SurfaceView;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
-import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
@@ -27,20 +29,15 @@ import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.imgproc.Moments;
 
 import android.app.Activity;
-import android.graphics.SumPathEffect;
 import android.hardware.Camera;
-import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
-import android.view.WindowManager;
 import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.opencv.core.Size;
@@ -64,6 +61,7 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
     private SeekBar maxTresholdSeekbar = null;
     private TextView minTresholdSeekbarText = null;
     private TextView numberOfFingersText = null;
+    private TextView numberOfFingersText1 = null;
 
     double iThreshold = 0;
 
@@ -78,7 +76,22 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
     private Scalar CONTOUR_COLOR_WHITE;
 
     public Handler mHandler = new Handler();
+    public Handler matchHandler = new Handler();
+    private boolean captureFinger = false;
     int numberOfFingers = 0;
+
+    private CountDownTimer countDownTimer;
+    private boolean canStart = false;
+    private int count = 3;
+    private static final int TOTAL = 4 * 1000;
+    private static final int COUNT_DOWN_INTERVAL = 900;
+    private static final List<String> myRspLists = new ArrayList<>();
+    private int myRsp;          // 1 -> 주먹, 2 -> 가위, 3 -> 보자기
+    private int randomValue;    // 1 -> 주먹, 2 -> 가위, 3 -> 보자기
+    private int resultOfMatch; // 1: 이김,     2 : 짐,      3: 비김.
+
+    private int rspScore = 0;
+    private boolean firstTouch;
 
     final Runnable mUpdateFingerCountResults = new Runnable() {
         public void run() {
@@ -104,12 +117,51 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
         }
     };
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "called onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rsp);
+
+        Toast.makeText(RspActivity.this, "화면에 보이는 당신의 손을 터치하세요.", Toast.LENGTH_SHORT).show();
+
+        initCamera();
+
+        canStart = true;
+        firstTouch = false;
+        numberOfFingersText = (TextView) findViewById(R.id.numberOfFingers);
+        numberOfFingersText1 = (TextView) findViewById(R.id.numberOfFingers1);
+
+        ImageView computerRspIv = findViewById(R.id.computer_rsp);
+        computerRspIv.setImageResource(R.drawable.ic_android);
+        if (myRspLists.size() <= 2) {
+            myRspLists.add("바위");
+            myRspLists.add("가위");
+            myRspLists.add("보");
+        }
+
+        initSeekBar();
+
+        Button startBtn = findViewById(R.id.rsp_start_game_Btn);
+        startBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (canStart) {
+                    myRsp = 0;
+                    randomValue = 0;
+                    Log.d("COUNT", "CountDown Start");
+                    TextView rspCountDown = findViewById(R.id.rsp_count_down_Tv);
+                    rspCountDown.setVisibility(View.VISIBLE);
+
+                    countDownTimer();
+                    countDownTimer.start();
+                }
+            }
+        });
+
+    }
+
+    private void initCamera() {
         if (!OpenCVLoader.initDebug()) {
             Log.e(TAG, "OpenCVLoader.initDebug() is False");
         } else {
@@ -118,13 +170,15 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
         mOpenCvCameraView = (CustomSufaceView) findViewById(R.id.main_surface_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
-        minTresholdSeekbarText = (TextView) findViewById(R.id.textView3);
+    }
 
-        numberOfFingersText = (TextView) findViewById(R.id.numberOfFingers);
+    private void initSeekBar() {
+        minTresholdSeekbarText = (TextView) findViewById(R.id.textView3);
         minTresholdSeekbar = (SeekBar) findViewById(R.id.seekBar1);
 
         minTresholdSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChanged = 0;
+
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChanged = progress;
@@ -133,7 +187,6 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
@@ -141,20 +194,24 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
                 minTresholdSeekbarText.setText(String.valueOf(progressChanged));
             }
         });
-        minTresholdSeekbar.setProgress(8700);
+        minTresholdSeekbar.setProgress(20000);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(mOpenCvCameraView != null){
+        if (mOpenCvCameraView != null) {
             mOpenCvCameraView.disableView();
+            mOpenCvCameraView.releaseCamera();
         }
+        countDownTimer.cancel();
+        countDownTimer = null;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        canStart = true;
         if (!OpenCVLoader.initDebug()) {
             Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
 //            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
@@ -168,12 +225,23 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mOpenCvCameraView != null)
+        if (mOpenCvCameraView != null) {
+            mOpenCvCameraView.releaseCamera();
             mOpenCvCameraView.disableView();
+        }
+        countDownTimer.cancel();
+        countDownTimer = null;
     }
 
     @Override
     public boolean onTouch(View view, MotionEvent event) {
+        canStart = true;
+        if (firstTouch) {
+            Toast.makeText(RspActivity.this, "하단의 Seekbar 을 조절하여 손가락 개수를 올바르게 인식하도록 하세요", Toast.LENGTH_SHORT).show();
+            Toast.makeText(RspActivity.this, "손을 올바르게 인식한다면 Start 버튼을 누르세요", Toast.LENGTH_SHORT).show();
+            firstTouch = false;
+        }
+
         int cols = mRgba.cols();
         int rows = mRgba.rows();
 
@@ -183,7 +251,7 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
         int x = (int) event.getX() - xOffset;
         int y = (int) event.getY() - yOffset;
 
-        Log.i(TAG, "Touch image coordinates: (" + x + ", " + y + ")");
+//        Log.i(TAG, "Touch image coordinates: (" + x + ", " + y + ")");
 
         if ((x < 0) || (y < 0) || (x > cols) || (y > rows)) {
             return false;
@@ -209,8 +277,8 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
             mBlobColorHsv.val[i] /= pointCount;
         mBlobColorRgba = converScalarHsv2Rgba(mBlobColorHsv);
 
-        Log.i(TAG, "Touched rgba color: (" + mBlobColorRgba.val[0] + ", " + mBlobColorRgba.val[1] +
-                ", " + mBlobColorRgba.val[2] + ", " + mBlobColorRgba.val[3] + ")");
+//        Log.i(TAG, "Touched rgba color: (" + mBlobColorRgba.val[0] + ", " + mBlobColorRgba.val[1] +
+//                ", " + mBlobColorRgba.val[2] + ", " + mBlobColorRgba.val[3] + ")");
 
         mDetector.setHsvColor(mBlobColorHsv);
 
@@ -241,14 +309,15 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
         Camera.Size resolution = mOpenCvCameraView.getResolution();
 
         String caption = "Resolution " + Integer.valueOf(resolution.width).toString() + "x" + Integer.valueOf(resolution.height).toString();
-        Toast.makeText(this, caption, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, caption, Toast.LENGTH_SHORT).show();
+
 
         Camera.Parameters cParams = mOpenCvCameraView.getParameters();
 
-        cParams.setPreviewSize(width,height);
+        cParams.setPreviewSize(width, height);
 
         mOpenCvCameraView.setParameters(cParams);
-        Toast.makeText(this, "Focus mode : " + cParams.getFocusMode(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "Focus mode : " + cParams.getFocusMode(), Toast.LENGTH_SHORT).show();
 
         mRgba = new Mat(height, width, CvType.CV_8UC4);
         mDetector = new ColorBlobDetector();
@@ -283,8 +352,6 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
         List<MatOfPoint> contours = mDetector.getContours();
         mDetector.process(mRgba);
 
-        Log.d(TAG, "Contours count: " + contours.size());
-
         if (contours.size() <= 0) {
             return mRgba;
         }
@@ -307,27 +374,17 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
 
         Imgproc.rectangle(mRgba, boundRect.tl(), boundRect.br(), CONTOUR_COLOR_WHITE, 2, 8, 0);
 
-
-        Log.d(TAG,
-                " Row start [" +
-                        (int) boundRect.tl().y + "] row end [" +
-                        (int) boundRect.br().y + "] Col start [" +
-                        (int) boundRect.tl().x + "] Col end [" +
-                        (int) boundRect.br().x + "]");
-
         int rectHeightThresh = 0;
         double a = boundRect.br().y - boundRect.tl().y;
         a = a * 0.7;
         a = boundRect.tl().y + a;
 
-        Log.d(TAG,
-                " A [" + a + "] br y - tl y = [" + (boundRect.br().y - boundRect.tl().y) + "]");
 
         //Core.rectangle( mRgba, boundRect.tl(), boundRect.br(), CONTOUR_COLOR, 2, 8, 0 );
         Imgproc.rectangle(mRgba, boundRect.tl(), new Point(boundRect.br().x, a), CONTOUR_COLOR, 2, 8, 0);
 
         MatOfPoint2f pointMat = new MatOfPoint2f();
-        Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(boundPos).toArray()), pointMat, 3, true);
+        Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(boundPos).toArray()), pointMat, 2, false);
         contours.set(boundPos, new MatOfPoint(pointMat.toArray()));
 
         MatOfInt hull = new MatOfInt();
@@ -350,32 +407,27 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
 
         List<MatOfPoint> defectPoints = new LinkedList<MatOfPoint>();
         List<Point> listPoDefect = new LinkedList<Point>();
+
         for (int j = 0; j < convexDefect.toList().size(); j = j + 4) {
             Point farPoint = contours.get(boundPos).toList().get(convexDefect.toList().get(j + 2));
             Integer depth = convexDefect.toList().get(j + 3);
             if (depth > iThreshold && farPoint.y < a) {
                 listPoDefect.add(contours.get(boundPos).toList().get(convexDefect.toList().get(j + 2)));
             }
-            Log.d(TAG, "defects [" + j + "] " + convexDefect.toList().get(j + 3));
         }
 
         MatOfPoint e2 = new MatOfPoint();
         e2.fromList(listPo);
         defectPoints.add(e2);
 
-        Log.d(TAG, "hull: " + hull.toList());
-        Log.d(TAG, "defects: " + convexDefect.toList());
-
         Imgproc.drawContours(mRgba, hullPoints, -1, CONTOUR_COLOR, 3);
 
         int defectsTotal = (int) convexDefect.total();
-        Log.d(TAG, "Defect total " + defectsTotal);
 
         this.numberOfFingers = listPoDefect.size();
         if (this.numberOfFingers > 5) this.numberOfFingers = 5;
 
         mHandler.post(mUpdateFingerCountResults);
-        Log.d(TAG, "Handler.post called");
 
         for (Point p : listPoDefect) {
             Imgproc.circle(mRgba, p, 6, new Scalar(255, 0, 255));
@@ -390,7 +442,151 @@ public class RspActivity extends Activity implements OnTouchListener, CvCameraVi
     }
 
     public void updateNumberOfFingers() {
-        Log.d(TAG, "updateNumberOfFingers called, numberOfFingers: " + numberOfFingers);
-        numberOfFingersText.setText(String.valueOf(this.numberOfFingers));
+//        Log.d(TAG, "updateNumberOfFingers called, numberOfFingers: " + numberOfFingers);
+
+        if (numberOfFingers >= 4) { // 보
+            numberOfFingersText.setText(myRspLists.get(2));
+            numberOfFingersText.setText("보");
+
+        } else if ((numberOfFingers <= 3) && (numberOfFingers >= 2)) { // 가위
+
+            numberOfFingersText.setText("가위");
+        } else {
+            numberOfFingersText.setText("바위");
+        }
+        numberOfFingersText1.setText(String.valueOf(this.numberOfFingers));
+    }
+
+    private void countDownTimer() {
+        countDownTimer = new CountDownTimer(TOTAL, COUNT_DOWN_INTERVAL) {
+            @Override
+            public void onTick(long l) {
+                TextView cntDownTv = findViewById(R.id.rsp_count_down_Tv);
+                cntDownTv.setVisibility(View.VISIBLE);
+                cntDownTv.setText(String.valueOf(count));
+
+                if (count < 1) {
+                    cntDownTv.setVisibility(View.INVISIBLE);
+                }
+
+                count--;
+                if (count < 0) {
+                    count = 3;
+                    canStart = false;
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                findViewById(R.id.rsp_count_down_Tv).setVisibility(View.INVISIBLE);
+
+                doRockScissorsPaper();
+            }
+        };
+    }
+
+    private void doRockScissorsPaper() {
+        setComputerRspIv(); // 컴퓨터가 가위, 바위, 보 제시
+        setMyRsp(); // 내 가위, 바위, 보 를 저장
+
+        matchRsp(); // 승부 판가름
+    }
+
+    private void setMyRsp() {
+        if (numberOfFingers >= 4) { // 보
+            numberOfFingersText.setText("보");
+            myRsp = 3; // 보자기
+        } else if ((numberOfFingers <= 3) && (numberOfFingers >= 2)) { // 가위
+            numberOfFingersText.setText("가위");
+            myRsp = 2; // 가위
+        } else {
+            numberOfFingersText.setText("바위");
+            myRsp = 1; // 바위
+        }
+    }
+
+    private void setComputerRspIv() {
+        // 컴퓨터가 가위, 바위, 보 제시
+        randomValue = (int) (Math.random() * 3) + 1; // 1 : 주먹, 2 : 가위, 3 : 보자기
+        ImageView computerRspIv = findViewById(R.id.computer_rsp);
+        Log.d("Random Value", "randomValue : " + randomValue);
+
+        if (randomValue == 1) {
+            computerRspIv.setImageResource(R.drawable.ic_rock);
+        } else if (randomValue == 2) {
+            computerRspIv.setImageResource(R.drawable.ic_scissors);
+        } else if (randomValue == 3) {
+            computerRspIv.setImageResource(R.drawable.ic_paper);
+        }
+
+    }
+
+    private void matchRsp() {
+        if (myRsp == randomValue) {
+            resultOfMatch = 3; // 비김
+        }
+        // 내가 이김 (바위, 가위) (가위, 보자기) (보자기, 바위) == (1, 2) (2,3) (3,1)
+        else if (
+                (((myRsp == 1) && (randomValue == 2)) ||
+                        ((myRsp == 2) && (randomValue == 3)) ||
+                        ((myRsp == 3) && (randomValue == 1)))) {
+            resultOfMatch = 1; // 이김
+            rspScore += 1;
+        }
+        // 내가 짐
+        else if (
+                (((myRsp == 2) && (randomValue == 1)) ||
+                        ((myRsp == 3) && (randomValue == 2)) ||
+                        ((myRsp == 1) && (randomValue == 3)))) {
+            resultOfMatch = 2;
+        } else {
+            resultOfMatch = 0;
+            Log.e(TAG, "Error - resultOfMatch is unvaild");
+        }
+        Log.d(TAG, "resultOfMatch " + resultOfMatch);
+
+        if (resultOfMatch == 1) {
+            // TODO: 2022/12/09 이김 다시 시작
+            canStart = true;
+            rspScore += 1;
+            Log.d(TAG, "Match Result - Win!  rspScore : " + rspScore);
+            count = 3;
+//            matchHandler.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    countDownTimer.start();
+//                }
+//            }, 2000);
+//            countDownTimer.start();
+        } else if (resultOfMatch == 2) {
+            // TODO: 2022/12/09 짐
+            Log.d(TAG, "Match Result - Lose! rspScore : " + rspScore);
+            mOpenCvCameraView.releaseCamera();
+            gameOver();
+        } else if (resultOfMatch == 3) {
+            canStart = true;
+            // TODO: 2022/12/09 비김 다시 시작
+            Log.d(TAG, "Match Result - Draw! rspScore : " + rspScore);
+            count = 3;
+//            matchHandler.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    countDownTimer.start();
+//                }
+//            }, 2000);
+//            countDownTimer.start();
+
+        } else {
+            resultOfMatch = 0;
+            Log.d(TAG, "Match Result : Default");
+        }
+
+    }
+
+
+    private void gameOver() {
+        GameInfo.setTotalScore(rspScore + GameInfo.getTotalScore());
+        Intent intent = new Intent(getApplicationContext(), GameOverActivity.class);
+        startActivity(intent);
     }
 }
