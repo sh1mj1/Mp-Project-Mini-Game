@@ -41,6 +41,11 @@ find_library( # Sets the name of the path variable.
         # you want CMake to locate.
         log)
 
+find_library(
+        jnigraphics-lib
+
+        jnigraphics
+)
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
@@ -50,8 +55,18 @@ target_link_libraries( # Specifies the target library.
         JNIDriver
         # Links the target library to the log library
         # included in the NDK.
+        /Users/shimjihoon/Downloads/22-2/micro_process_prac./microDocker/W10/OpenCL_lib_and_include/lib/libGLES_mali.so
         ${log-lib}
+        ${jnigraphics-lib}
         )
+# Target 에서 헤더파일을 찾기 위해 사용하는 폴더를 지정.
+target_include_directories(
+        # Target
+        JNIDriver
+        PRIVATE
+        # 헤더파일을 찾기 위해 사용하는 폴더
+        src/main/cpp)
+
 #
 #target_link_libraries(
 #

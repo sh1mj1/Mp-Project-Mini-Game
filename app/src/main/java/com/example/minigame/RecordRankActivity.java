@@ -27,6 +27,21 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
     public Rank myRank = new Rank();
     private final int REQ_CODE_SELECT_IMAGE = 100;
 
+    // Mark -JNI Method/////////////////////////////////////////
+    static {
+        System.loadLibrary("JNIDriver");
+    }
+    // blur GPU
+    public native static Bitmap GaussianBlurBitmap(Bitmap bitmap);
+    public native static Bitmap gaussianBlurBitmap_2(Bitmap bitmap);
+    public native static Bitmap gaussianBlurBitmap_3(Bitmap bitmap);
+
+    public native static Bitmap grayScaleBitmap_1(Bitmap bitmap);
+    public native static Bitmap grayScaleBitmap_2(Bitmap bitmap);
+    public native static Bitmap grayScaleBitmap_3(Bitmap bitmap);
+
+
+
     // Mark -camera/////////////////////////////////////////
 
      static {
@@ -61,8 +76,6 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
         recordScoreTv.setText(GameInfo.getTotalScore().toString());
         bitmap = GameInfo.getImgBitmap();
         capturedImgIb.setRotation(180f);
-
-
         capturedImgIb.setImageBitmap(bitmap);
 
 
@@ -86,6 +99,10 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
             @Override
             public void onClick(View view) {
                 // TODO: 2022/12/10 edit blur
+
+                bitmap = GaussianBlurBitmap(bitmap);
+                capturedImgIb.setImageBitmap(bitmap);
+
             }
         });
         completeBtn.setOnClickListener(new View.OnClickListener() {
@@ -97,7 +114,7 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
         });
 
 
-        // 카메라 이동
+        // 카메라로 이동
         capturedImgIb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -118,7 +135,7 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
         Log.d(TAG, "nickname - " + myNickname);
         GameInfo.setGameRank(5);
         GameInfo.setNickname(myNickname);
-//        GameInfo.setImgBitmap(bitmap);
+        GameInfo.setImgBitmap(bitmap);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -130,6 +147,7 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
         Mat src = new Mat();
         Utils.bitmapToMat(bitmap, src);
         Mat edge = new Mat();
+        // Image Processing
         Imgproc.Canny(src, edge, 50, 150);
         Utils.matToBitmap(edge, bitmap);
         src.release();
