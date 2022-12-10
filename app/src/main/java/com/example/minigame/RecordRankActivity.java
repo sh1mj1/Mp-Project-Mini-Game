@@ -5,6 +5,7 @@ import androidx.core.app.ActivityCompat;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,12 +19,17 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class RecordRankActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     private String TAG = "RecordRankActivity";
     private String myNickname;
-    private Bitmap bitmap;
+    public Bitmap tempBitmap;
+    Bitmap buf_bitmap;
     public Rank myRank = new Rank();
     private final int REQ_CODE_SELECT_IMAGE = 100;
 
@@ -31,31 +37,37 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
     static {
         System.loadLibrary("JNIDriver");
     }
+
+
     // blur GPU
     public native static Bitmap GaussianBlurBitmap(Bitmap bitmap);
+
     public native static Bitmap gaussianBlurBitmap_2(Bitmap bitmap);
+
     public native static Bitmap gaussianBlurBitmap_3(Bitmap bitmap);
 
-    public native static Bitmap grayScaleBitmap_1(Bitmap bitmap);
-    public native static Bitmap grayScaleBitmap_2(Bitmap bitmap);
-    public native static Bitmap grayScaleBitmap_3(Bitmap bitmap);
+    public native static Bitmap GrayScaleBitmap(Bitmap bitmap);
 
+    public native static Bitmap grayScaleBitmap_2(Bitmap bitmap);
+
+    public native static Bitmap grayScaleBitmap_3(Bitmap bitmap);
 
 
     // Mark -camera/////////////////////////////////////////
 
-     static {
-         if (!OpenCVLoader.initDebug()) {
-             Log.d("RecordRankActivity", "OpenCVLoader.initDebug() is False");
-         } else {
-             Log.d("RecordRankActivity", "OpenCVLoader.initDebug() is True");
-         }
-     }
+    static {
+        if (!OpenCVLoader.initDebug()) {
+            Log.d("RecordRankActivity", "OpenCVLoader.initDebug() is False");
+        } else {
+            Log.d("RecordRankActivity", "OpenCVLoader.initDebug() is True");
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record_rank);
+
 
         if (!OpenCVLoader.initDebug()) {
             Log.e(TAG, "OpenCVLoader.initDebug() is False");
@@ -74,10 +86,32 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
 
         // Mark -First Setting/////////////////////////////////////////
         recordScoreTv.setText(GameInfo.getTotalScore().toString());
-        bitmap = GameInfo.getImgBitmap();
-        capturedImgIb.setRotation(180f);
-        capturedImgIb.setImageBitmap(bitmap);
 
+        tempBitmap = GameInfo.getImgBitmap();
+
+        capturedImgIb.setRotation(180f);
+        capturedImgIb.setImageBitmap(tempBitmap);
+//        saveBitmapAsFile(tempBitmap, "/data/local/tmp/tempBitmap.bmp");
+
+//        File file = new File("/data/local/tmp");
+//        OutputStream os = null;
+//        try {
+//            file.createNewFile();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        try {
+//            os = new FileOutputStream(file);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+
+
+
+//        BitmapFactory.Options options = new BitmapFactory.Options();
+//        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+//
+//        buf_bitmap = BitmapFactory.decodeFile("data/local/tmp/tempBitmap.bmp", options);
 
         // TODO: 2022/12/06 사진 편집
         // Mark -Edit Picture and Sync/////////////////////////////////////////
@@ -92,7 +126,7 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
             @Override
             public void onClick(View view) {
                 detectBitmapEdge();
-                capturedImgIb.setImageBitmap(bitmap);
+                capturedImgIb.setImageBitmap(tempBitmap);
             }
         });
         blurBtn.setOnClickListener(new View.OnClickListener() {
@@ -100,11 +134,14 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
             public void onClick(View view) {
                 // TODO: 2022/12/10 edit blur
 
-                bitmap = GaussianBlurBitmap(bitmap);
-                capturedImgIb.setImageBitmap(bitmap);
+                tempBitmap = GaussianBlurBitmap(tempBitmap);
+                capturedImgIb.setImageBitmap(tempBitmap);
+//                buf_bitmap = GaussianBlurBitmap(buf_bitmap);
+//                capturedImgIb.setImageBitmap(buf_bitmap);
 
             }
         });
+
         completeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -135,23 +172,40 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
         Log.d(TAG, "nickname - " + myNickname);
         GameInfo.setGameRank(5);
         GameInfo.setNickname(myNickname);
-        GameInfo.setImgBitmap(bitmap);
+        GameInfo.setImgBitmap(tempBitmap);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        intent.addFlags(Intent.)
         startActivity(intent);
     }
 
 
-    public void detectBitmapEdge(){
+    public void detectBitmapEdge() {
         Mat src = new Mat();
-        Utils.bitmapToMat(bitmap, src);
+        Utils.bitmapToMat(tempBitmap, src);
         Mat edge = new Mat();
         // Image Processing
         Imgproc.Canny(src, edge, 50, 150);
-        Utils.matToBitmap(edge, bitmap);
+        Utils.matToBitmap(edge, tempBitmap);
         src.release();
         edge.release();
+    }
+
+    private void saveBitmapAsFile(Bitmap bitmap, String filepath) {
+        File file = new File(filepath);
+        OutputStream os = null;
+
+        try {
+            file.createNewFile();
+            os = new FileOutputStream(file);
+
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
+
+            os.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

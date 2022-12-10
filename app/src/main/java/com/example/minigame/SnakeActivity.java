@@ -47,7 +47,7 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
     private SurfaceHolder surfaceHolder;
 
     // snake moving position (must be right, left, up, down)
-    private String movingPosition = "right"; // defulat = r(right)
+    private String movingPosition = "Right"; // defulat = r(right)
 
     private int score = 0;
 
@@ -115,8 +115,8 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
             @Override
             public void onClick(View view) {
 
-                if (!movingPosition.equals("down")) {
-                    movingPosition = "up";
+                if (!movingPosition.equals("Down")) {
+                    movingPosition = "Up";
                 }
             }
         });
@@ -124,8 +124,8 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
             @Override
             public void onClick(View view) {
 
-                if (!movingPosition.equals("up")) {
-                    movingPosition = "down";
+                if (!movingPosition.equals("Up")) {
+                    movingPosition = "Down";
                 }
 
             }
@@ -133,16 +133,16 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
         leftBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!movingPosition.equals("right")) {
-                    movingPosition = "left";
+                if (!movingPosition.equals("Right")) {
+                    movingPosition = "Left";
                 }
             }
         });
         rightBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!movingPosition.equals("left")) {
-                    movingPosition = "right";
+                if (!movingPosition.equals("Left")) {
+                    movingPosition = "Right";
                 }
             }
         });
@@ -178,7 +178,7 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
         // make score 0
         score = 0;
         // set default moving position
-        movingPosition = "right";
+        movingPosition = "Right";
 
         // default snake starting position on the screen
         int startPositionX = (pointSize) * defaultTalePoints;
@@ -240,25 +240,25 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
 
                 // check of which side snake is moving
                 switch (movingPosition) {
-                    case "right":
+                    case "Right":
                         // move snake's head to right.
                         // other points follow snake's head point to move the snake
                         snakePointsList.get(0).setPositionX(headPositionX + (pointSize * 2));
                         snakePointsList.get(0).setPositionY(headPositionY);
                         break;
-                    case "left":
+                    case "Left":
                         // move snake's head to left.
                         // other points follow snake's head point to move the snake
                         snakePointsList.get(0).setPositionX(headPositionX - (pointSize * 2));
                         snakePointsList.get(0).setPositionY(headPositionY);
                         break;
-                    case "up":
+                    case "Up":
                         // move snake's head to up.
                         // other points follow snake's head point to move the snake
                         snakePointsList.get(0).setPositionX(headPositionX);
                         snakePointsList.get(0).setPositionY(headPositionY - (pointSize * 2));
                         break;
-                    case "down":
+                    case "Down":
                         // move snake's head to down.
                         // other points follow snake's head point to move the snake
                         snakePointsList.get(0).setPositionX(headPositionX);
@@ -407,22 +407,22 @@ public class SnakeActivity extends AppCompatActivity implements SurfaceHolder.Ca
             switch (msg.arg1) {
                 case 1:
 //                    tv.setText("UP");
-                    movingPosition = "up";
+                    movingPosition = "Up";
                     Log.d(SNAKE, "movingPosition" + movingPosition);
                     break;
                 case 2:
 //                    tv.setText("DOWN");
-                    movingPosition = "down";
+                    movingPosition = "Down";
                     Log.d(SNAKE, "movingPosition" + movingPosition);
                     break;
                 case 3:
 //                    tv.setText("LEFT");
-                    movingPosition = "left";
+                    movingPosition = "Left";
                     Log.d(SNAKE, "movingPosition" + movingPosition);
                     break;
                 case 4:
 //                    tv.setText("RIGHT");
-                    movingPosition = "right";
+                    movingPosition = "Right";
                     Log.d(SNAKE, "movingPosition" + movingPosition);
                     break;
                 case 5:

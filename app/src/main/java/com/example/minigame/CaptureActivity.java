@@ -55,7 +55,8 @@ public class CaptureActivity extends AppCompatActivity {
             GameInfo.setImgBitmap(bitmap);
 
             Intent intent = new Intent(getApplicationContext(), RecordRankActivity.class);
-
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
