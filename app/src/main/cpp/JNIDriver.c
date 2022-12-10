@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #include <android/log.h>
 #include <android/bitmap.h>
-//#include <CL/opencl.h>
+#include <CL/opencl.h>
 #include <assert.h>
 
 int ledFd = 0;

@@ -13,19 +13,40 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
 import java.util.ArrayList;
 
 public class RecordRankActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
-    private final String TAG = "RecordRankActivity";
+    private String TAG = "RecordRankActivity";
     private String myNickname;
     private Bitmap bitmap;
     public Rank myRank = new Rank();
+    private final int REQ_CODE_SELECT_IMAGE = 100;
+
     // Mark -camera/////////////////////////////////////////
+
+     static {
+         if (!OpenCVLoader.initDebug()) {
+             Log.d("RecordRankActivity", "OpenCVLoader.initDebug() is False");
+         } else {
+             Log.d("RecordRankActivity", "OpenCVLoader.initDebug() is True");
+         }
+     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record_rank);
+
+        if (!OpenCVLoader.initDebug()) {
+            Log.e(TAG, "OpenCVLoader.initDebug() is False");
+        } else {
+            Log.d(TAG, "OpenCVLoader.initDebug() is True");
+        }
 
         TextView recordScoreTv = findViewById(R.id.record_score_Tv);
         ImageView capturedImgIb = findViewById(R.id.capturedImage_Ib);
@@ -40,6 +61,8 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
         recordScoreTv.setText(GameInfo.getTotalScore().toString());
         bitmap = GameInfo.getImgBitmap();
         capturedImgIb.setRotation(180f);
+
+
         capturedImgIb.setImageBitmap(bitmap);
 
 
@@ -55,7 +78,8 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
         edgeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: 2022/12/10 edit edge
+                detectBitmapEdge();
+                capturedImgIb.setImageBitmap(bitmap);
             }
         });
         blurBtn.setOnClickListener(new View.OnClickListener() {
@@ -99,6 +123,17 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
+    }
+
+
+    public void detectBitmapEdge(){
+        Mat src = new Mat();
+        Utils.bitmapToMat(bitmap, src);
+        Mat edge = new Mat();
+        Imgproc.Canny(src, edge, 50, 150);
+        Utils.matToBitmap(edge, bitmap);
+        src.release();
+        edge.release();
     }
 }
 
