@@ -5,6 +5,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <jni.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <android/log.h>
+#include <android/bitmap.h>
+//#include <CL/opencl.h>
+#include <assert.h>
 
 int ledFd = 0;
 int interruptFd = 0;

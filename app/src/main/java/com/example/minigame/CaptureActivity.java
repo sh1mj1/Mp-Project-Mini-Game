@@ -34,23 +34,15 @@ public class CaptureActivity extends AppCompatActivity {
     Camera.PictureCallback pictureCallback = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
-
+            camera.setDisplayOrientation(180);
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
-            Bitmap bitmap1 = BitmapFactory.decodeResource(getResources(), R.id.captured_image, options);
-            int imageHeight = options.outHeight;
-            int imageWidth = options.outWidth;
-            String imageType = options.outMimeType;
 
             bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 
             int w = bitmap.getWidth();
             int h = bitmap.getHeight();
 
-            Matrix mtx = new Matrix();
-            mtx.postRotate(180); // bitmap 이미지를 180도 돌려져있음 -> 돌린다
-
-//            bitmap = Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, true);
             bitmap = Bitmap.createBitmap(bitmap, 0, 0, w, h);
 
 
@@ -58,8 +50,7 @@ public class CaptureActivity extends AppCompatActivity {
                 Toast.makeText(CaptureActivity.this, "Capture image is empty", Toast.LENGTH_LONG).show();
                 return;
             }
-//            bitmap = scaleDownBItmapImage(rotatedBitmap, 450, 300);
-//            captureedImageHolder.setImageBitmap(bitmap);
+            bitmap = scaleDownBItmapImage(bitmap, 450, 300);
 
             GameInfo.setImgBitmap(bitmap);
 
@@ -71,16 +62,6 @@ public class CaptureActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
             }, 700);
-//            (ImageView)findViewById(R.id.capturedImage_Ib).setImage
-
-            /*
-             BitmapFactory.Options options = new BitmapFactory.Options();
-             options.inJustDecodeBounds = true;
-             Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.id.myimage,    options);
-             int imageHeight = options.outHeight;
-             int imageWidth = options.outWidth;
-             String imageType = options.outMimeType;
-             */
 
         }
     };
@@ -112,12 +93,12 @@ public class CaptureActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_capture);
-
         Button btn = (Button) findViewById(R.id.button_capture);
-        captureedImageHolder = (ImageView) findViewById(R.id.captured_image);
+
         // Create an instance of Camera
         mCamera = getCameraInstance();
         mCamera.setDisplayOrientation(180);
+
         // Create out Preview view and set is as the content of our activity.
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);

@@ -39,6 +39,7 @@ public class RecordRankActivity extends AppCompatActivity implements ActivityCom
         // Mark -First Setting/////////////////////////////////////////
         recordScoreTv.setText(GameInfo.getTotalScore().toString());
         bitmap = GameInfo.getImgBitmap();
+        capturedImgIb.setRotation(180f);
         capturedImgIb.setImageBitmap(bitmap);
 
 
